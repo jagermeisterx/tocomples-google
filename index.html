@@ -146,6 +146,7 @@
         if (json.status !== 'ok') throw new Error(json.message || 'Error del servidor');
 
         inventarioData = json.data;
+        console.log('Datos del servidor:', JSON.stringify(json));
         renderizarTabla(inventarioData);
         renderizarSelector(inventarioData);
 
