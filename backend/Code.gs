@@ -11,9 +11,9 @@ function doGet() {
 
   const result = data.map(row => ({
     producto: String(row[0]).trim(),
-    metaTotal: Number(row[1]),
-    totalDonado: Number(row[2]),
-    restante: Number(row[3])
+    metaTotal: Number(row[1]) || 0,
+    totalDonado: Number(row[2]) || 0,
+    restante: Number(row[3]) || 0
   }));
 
   return jsonResponse({ status: 'ok', data: result });

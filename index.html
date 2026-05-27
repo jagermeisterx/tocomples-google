@@ -117,7 +117,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const SCRIPT_URL = 'URL_DEL_WEB_APP';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyaDXxxIHnlVLI7DTvtRhlw7_xYWuUuhdtK_VdcFDaiLRRXMfu6NI1Cbbuznc5N4LSg/exec';
 
     let inventarioData = [];
 
@@ -130,7 +130,7 @@
     async function cargarInventario() {
       mostrar(['loading']);
 
-      if (SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbxgMCmu-p_zX43VdZcXNN7jc3GVwy-cuxA2gGlb8RRT_mFf__iwbMPO4VKK1OQM8DJD/exec') {
+      if (!SCRIPT_URL || SCRIPT_URL === 'URL_DEL_WEB_APP') {
         mostrar(['error']);
         document.querySelector('#error .alert').innerHTML =
           '<p class="mb-2">Configura la URL del Web App en el archivo index.html.</p>' +
