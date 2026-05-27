@@ -5,77 +5,580 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Completada a Beneficio — Tía Marcela</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { background-color: #f8f9fa; font-size: 16px; }
-    .touch-target { min-height: 44px; min-width: 44px; }
-    .progress { height: 20px; border-radius: 10px; }
-    .badge-meta { font-size: 0.75rem; }
-    #loading, #error, #allDone, #content { display: none; }
-    #loading { display: flex; }
-    .alert-container { position: fixed; top: 0; left: 0; right: 0; z-index: 1050; padding: 1rem; pointer-events: none; }
-    .alert-container > .alert { pointer-events: auto; max-width: 600px; margin: 0 auto; }
+    :root {
+      --warm-bg: #FFF8F0;
+      --card-bg: #FFFFFF;
+      --accent: #E8553D;
+      --accent-dark: #C9422D;
+      --accent-light: #FDEAE6;
+      --green: #2D9F6F;
+      --green-light: #E4F5EC;
+      --green-dark: #1E7A53;
+      --text-primary: #2C2420;
+      --text-secondary: #7A6E66;
+      --text-muted: #A89E96;
+      --border: #EDE6DF;
+      --shadow-sm: 0 1px 3px rgba(44,36,32,.06), 0 1px 2px rgba(44,36,32,.04);
+      --shadow-md: 0 4px 16px rgba(44,36,32,.08), 0 1px 4px rgba(44,36,32,.04);
+      --shadow-lg: 0 12px 40px rgba(44,36,32,.1), 0 2px 8px rgba(44,36,32,.04);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      background-color: var(--warm-bg);
+      font-family: 'Nunito', sans-serif;
+      font-size: 16px;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── Background texture ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 0%, rgba(232,85,61,.07) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 100%, rgba(45,159,111,.06) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container { position: relative; z-index: 1; }
+
+    /* ── Header ── */
+    .hero {
+      text-align: center;
+      padding: 2.5rem 1rem 1.5rem;
+    }
+
+    .hero-emoji {
+      font-size: 2.8rem;
+      display: block;
+      margin-bottom: .5rem;
+      animation: wiggle 2s ease-in-out infinite;
+    }
+
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-6deg); }
+      75% { transform: rotate(6deg); }
+    }
+
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.6rem, 5vw, 2.2rem);
+      color: var(--text-primary);
+      margin-bottom: .25rem;
+      letter-spacing: -.02em;
+      line-height: 1.2;
+    }
+
+    .hero h1 span {
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: .95rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .hero-date {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      background: var(--accent-light);
+      color: var(--accent-dark);
+      font-weight: 700;
+      font-size: .8rem;
+      padding: .3rem .8rem;
+      border-radius: 20px;
+      margin-top: .6rem;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+
+    /* ── Cards ── */
+    .card-custom {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow .25s ease;
+      overflow: hidden;
+    }
+
+    .card-custom:hover { box-shadow: var(--shadow-md); }
+
+    .card-header-custom {
+      padding: 1rem 1.25rem .6rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .card-header-custom h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.15rem;
+      margin: 0;
+      color: var(--text-primary);
+    }
+
+    .card-header-custom .icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .card-header-custom .icon.inv {
+      background: var(--green-light);
+    }
+
+    .card-header-custom .icon.form {
+      background: var(--accent-light);
+    }
+
+    /* ── Progress overview ── */
+    .progress-overview {
+      padding: .6rem 1.25rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+
+    .progress-overview .progress-track {
+      flex: 1;
+      height: 8px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-overview .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), #48C78E);
+      border-radius: 99px;
+      transition: width .6s cubic-bezier(.22,1,.36,1);
+    }
+
+    .progress-overview .progress-text {
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--green-dark);
+      white-space: nowrap;
+    }
+
+    /* ── Table ── */
+    .items-list { padding: 0 .25rem .75rem; }
+
+    .item-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: .25rem .75rem;
+      align-items: center;
+      padding: .7rem 1rem;
+      border-top: 1px solid var(--border);
+      transition: background .15s ease;
+    }
+
+    .item-row:first-child { border-top: none; }
+    .item-row:hover { background: rgba(0,0,0,.015); }
+
+    .item-name {
+      font-weight: 700;
+      font-size: .88rem;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+
+    .item-stats {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .item-restante {
+      font-weight: 800;
+      font-size: .95rem;
+      color: var(--accent);
+    }
+
+    .item-meta {
+      font-size: .72rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .item-bar {
+      grid-column: 1 / -1;
+      height: 5px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .item-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width .5s cubic-bezier(.22,1,.36,1);
+    }
+
+    .item-bar-fill.partial { background: linear-gradient(90deg, var(--green), #48C78E); }
+    .item-bar-fill.full { background: var(--green); }
+
+    .item-row.completed {
+      opacity: .55;
+    }
+
+    .item-row.completed .item-restante {
+      color: var(--green);
+    }
+
+    .badge-done {
+      display: inline-flex;
+      align-items: center;
+      gap: .25rem;
+      background: var(--green-light);
+      color: var(--green-dark);
+      font-size: .68rem;
+      font-weight: 700;
+      padding: .2rem .55rem;
+      border-radius: 6px;
+      letter-spacing: .02em;
+    }
+
+    /* ── Form ── */
+    .form-body { padding: 0 1.25rem 1.25rem; }
+
+    .form-label {
+      font-weight: 700;
+      font-size: .8rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: .35rem;
+    }
+
+    .form-control, .form-select {
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: .7rem .9rem;
+      font-size: .95rem;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 600;
+      color: var(--text-primary);
+      background: var(--card-bg);
+      min-height: 48px;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(232,85,61,.12);
+    }
+
+    .form-control::placeholder { color: var(--text-muted); font-weight: 400; }
+
+    .form-text {
+      font-size: .78rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: .3rem;
+    }
+
+    .form-text.restante-hint {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .invalid-feedback {
+      font-size: .78rem;
+      font-weight: 600;
+    }
+
+    /* ── Submit button ── */
+    .btn-donar {
+      width: 100%;
+      min-height: 52px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: .02em;
+      cursor: pointer;
+      transition: all .2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-donar:hover:not(:disabled) {
+      background: var(--accent-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(232,85,61,.3);
+    }
+
+    .btn-donar:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-donar:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .btn-donar .spinner-border {
+      width: 18px; height: 18px;
+      border-width: 2px;
+    }
+
+    /* ── Alerts ── */
+    .alert-container {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1050;
+      padding: 1rem;
+      pointer-events: none;
+    }
+
+    .alert-container > .alert-custom {
+      pointer-events: auto;
+      max-width: 480px;
+      margin: 0 auto .5rem;
+      padding: .9rem 1.1rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: .9rem;
+      display: flex;
+      align-items: flex-start;
+      gap: .6rem;
+      box-shadow: var(--shadow-lg);
+      animation: slideDown .35s cubic-bezier(.22,1,.36,1);
+      border: none;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .alert-custom.success {
+      background: var(--green-light);
+      color: var(--green-dark);
+      border-left: 4px solid var(--green);
+    }
+
+    .alert-custom.danger {
+      background: #FDE8E8;
+      color: #991B1B;
+      border-left: 4px solid #DC2626;
+    }
+
+    .alert-custom.warning {
+      background: #FEF3C7;
+      color: #92400E;
+      border-left: 4px solid #F59E0B;
+    }
+
+    .alert-custom .alert-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .alert-custom .alert-body { flex: 1; }
+    .alert-custom .alert-close {
+      background: none; border: none;
+      font-size: 1.2rem; line-height: 1;
+      opacity: .5; cursor: pointer;
+      padding: 0; color: inherit;
+    }
+    .alert-custom .alert-close:hover { opacity: 1; }
+
+    /* ── States ── */
+    .state-box {
+      text-align: center;
+      padding: 3rem 1.5rem;
+    }
+
+    .state-box .state-icon {
+      font-size: 2.5rem;
+      margin-bottom: .75rem;
+      display: block;
+    }
+
+    .state-box h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.3rem;
+      margin-bottom: .4rem;
+    }
+
+    .state-box p {
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: .9rem;
+    }
+
+    .btn-retry {
+      background: none;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      padding: .5rem 1.5rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      min-height: 44px;
+      transition: all .2s ease;
+    }
+
+    .btn-retry:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* ── Footer ── */
+    .footer-custom {
+      text-align: center;
+      padding: 1.5rem 1rem 2rem;
+      font-size: .82rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .footer-custom .cash-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      background: #FEF3C7;
+      color: #92400E;
+      padding: .35rem .8rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: .78rem;
+      margin-top: .4rem;
+    }
+
+    /* ── Loading skeleton ── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--border) 25%, #F5EDE6 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-row {
+      display: flex;
+      gap: .75rem;
+      align-items: center;
+      padding: .7rem 1rem;
+    }
+
+    .skeleton-bar { height: 14px; flex: 1; }
+    .skeleton-circle { width: 40px; height: 14px; flex-shrink: 0; }
+
+    /* ── Responsive fine-tuning ── */
+    @media (max-width: 575px) {
+      .hero { padding: 2rem .5rem 1rem; }
+      .item-row { padding: .6rem .75rem; }
+    }
   </style>
 </head>
 <body>
 
   <div class="alert-container" id="alertContainer"></div>
 
-  <div class="container py-4">
+  <div class="container" style="max-width: 540px;">
 
-    <div class="text-center mb-4">
-      <h1 class="h3 mb-1">Completada a Beneficio — Tía Marcela</h1>
-      <p class="text-muted mb-0">Miércoles 03 de Junio</p>
+    <!-- Header -->
+    <div class="hero">
+      <span class="hero-emoji">🌭</span>
+      <h1>Completada a Beneficio<br><span>Tía Marcela</span></h1>
+      <p class="hero-sub">Ayúdanos a reunir los insumos</p>
+      <div class="hero-date">📅 Miércoles 03 de Junio</div>
     </div>
 
-    <div id="loading" class="text-center py-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Cargando...</span>
-      </div>
-      <p class="mt-2 text-muted">Cargando productos...</p>
-    </div>
-
-    <div id="error" class="text-center py-5">
-      <div class="alert alert-danger d-inline-block">
-        <p class="mb-2">No se pudieron cargar los datos. Intenta de nuevo.</p>
-        <button class="btn btn-outline-danger touch-target" onclick="cargarInventario()">Reintentar</button>
-      </div>
-    </div>
-
-    <div id="allDone" class="text-center py-5" style="display:none">
-      <div class="alert alert-success">
-        <h4 class="alert-heading">¡Todas las metas fueron cubiertas!</h4>
-        <p class="mb-0">Gracias a todos por su generosidad.</p>
-      </div>
-    </div>
-
-    <div id="content" style="display:none">
-
-      <div class="card shadow-sm mb-4">
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover mb-0" id="tabla">
-              <thead class="table-light">
-                <tr>
-                  <th>Producto</th>
-                  <th class="text-center">Meta</th>
-                  <th class="text-center">Donado</th>
-                  <th class="text-center">Restante</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="tablaBody"></tbody>
-            </table>
-          </div>
+    <!-- Loading -->
+    <div id="loading">
+      <div class="card-custom mb-4">
+        <div class="card-header-custom">
+          <div class="icon inv">📦</div>
+          <h2>Cargando insumos...</h2>
+        </div>
+        <div class="items-list">
+          <div class="skeleton-row"><div class="skeleton skeleton-bar"></div><div class="skeleton skeleton-circle"></div></div>
+          <div class="skeleton-row"><div class="skeleton skeleton-bar"></div><div class="skeleton skeleton-circle"></div></div>
+          <div class="skeleton-row"><div class="skeleton skeleton-bar"></div><div class="skeleton skeleton-circle"></div></div>
+          <div class="skeleton-row"><div class="skeleton skeleton-bar"></div><div class="skeleton skeleton-circle"></div></div>
+          <div class="skeleton-row"><div class="skeleton skeleton-bar"></div><div class="skeleton skeleton-circle"></div></div>
         </div>
       </div>
+    </div>
 
-      <div class="card shadow-sm mb-4" id="formCard">
-        <div class="card-body">
-          <h2 class="h5 card-title mb-3">Registrar Donación</h2>
+    <!-- Error -->
+    <div id="error" style="display:none">
+      <div class="card-custom">
+        <div class="state-box">
+          <span class="state-icon">😕</span>
+          <h3>Ups, algo falló</h3>
+          <p>No se pudieron cargar los datos.</p>
+          <button class="btn-retry" onclick="cargarInventario()">Reintentar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- All Done -->
+    <div id="allDone" style="display:none">
+      <div class="card-custom">
+        <div class="state-box">
+          <span class="state-icon">🎉</span>
+          <h3>¡Todas las metas fueron cubiertas!</h3>
+          <p>Gracias a todos por su generosidad.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="content" style="display:none">
+
+      <!-- Inventory Table -->
+      <div class="card-custom mb-4">
+        <div class="card-header-custom">
+          <div class="icon inv">📦</div>
+          <h2>Insumos Requeridos</h2>
+        </div>
+
+        <div class="progress-overview" id="progressOverview">
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFill" style="width:0%"></div>
+          </div>
+          <span class="progress-text" id="progressText">0%</span>
+        </div>
+
+        <div class="items-list" id="itemsList"></div>
+      </div>
+
+      <!-- Donation Form -->
+      <div class="card-custom mb-4" id="formCard">
+        <div class="card-header-custom">
+          <div class="icon form">✋</div>
+          <h2>Registrar Donación</h2>
+        </div>
+        <div class="form-body">
           <form id="donacionForm" novalidate>
             <div class="mb-3">
               <label for="producto" class="form-label">Producto</label>
-              <select class="form-select touch-target" id="producto" required>
+              <select class="form-select" id="producto" required>
                 <option value="" disabled selected>— Selecciona un producto —</option>
               </select>
               <div class="invalid-feedback">Selecciona un producto.</div>
@@ -83,25 +586,25 @@
 
             <div class="mb-3">
               <label for="cantidad" class="form-label">Cantidad</label>
-              <input type="number" class="form-control touch-target" id="cantidad" min="1" step="1" required>
+              <input type="number" class="form-control" id="cantidad" min="1" step="1" required placeholder="0">
               <div class="invalid-feedback">Ingresa una cantidad válida.</div>
-              <small id="cantidadAyuda" class="form-text text-muted"></small>
+              <small id="cantidadAyuda" class="form-text"></small>
             </div>
 
             <div class="row g-3 mb-3">
-              <div class="col-sm-6">
+              <div class="col-6">
                 <label for="nombre" class="form-label">Nombre</label>
-                <input type="text" class="form-control touch-target" id="nombre" minlength="2" maxlength="50" required autocomplete="given-name" style="text-transform: capitalize">
-                <div class="invalid-feedback">El nombre debe tener al menos 2 caracteres.</div>
+                <input type="text" class="form-control" id="nombre" minlength="2" maxlength="50" required autocomplete="given-name" placeholder="María" style="text-transform:capitalize">
+                <div class="invalid-feedback">Mínimo 2 caracteres.</div>
               </div>
-              <div class="col-sm-6">
+              <div class="col-6">
                 <label for="apellido" class="form-label">Apellido</label>
-                <input type="text" class="form-control touch-target" id="apellido" minlength="2" maxlength="50" required autocomplete="family-name" style="text-transform: capitalize">
-                <div class="invalid-feedback">El apellido debe tener al menos 2 caracteres.</div>
+                <input type="text" class="form-control" id="apellido" minlength="2" maxlength="50" required autocomplete="family-name" placeholder="González" style="text-transform:capitalize">
+                <div class="invalid-feedback">Mínimo 2 caracteres.</div>
               </div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 touch-target" id="btnSubmit" disabled>
+            <button type="submit" class="btn-donar" id="btnSubmit" disabled>
               Registrar Donación
             </button>
           </form>
@@ -110,9 +613,12 @@
 
     </div>
 
-    <footer class="text-center text-muted small mt-4 pt-3 border-top">
-      <p class="mb-0">También puedes aportar con dinero en efectivo. ¡Gracias!</p>
-    </footer>
+    <!-- Footer -->
+    <div class="footer-custom">
+      <p class="mb-1">¿No puedes comprar productos?</p>
+      <div class="cash-hint">💵 También puedes aportar con dinero en efectivo</div>
+    </div>
+
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -121,42 +627,30 @@
 
     let inventarioData = [];
 
+    /* ── Visibility toggle ── */
     function mostrar(ids) {
-      const displayMap = { loading: 'flex', error: 'block', allDone: 'block', content: 'block' };
       ['loading', 'error', 'allDone', 'content'].forEach(id => {
-        document.getElementById(id).style.display = ids.includes(id) ? displayMap[id] : 'none';
+        document.getElementById(id).style.display = ids.includes(id) ? 'block' : 'none';
       });
     }
 
+    /* ── Load inventory ── */
     async function cargarInventario() {
       mostrar(['loading']);
-
-      if (!SCRIPT_URL || SCRIPT_URL === 'URL_DEL_WEB_APP') {
-        mostrar(['error']);
-        document.querySelector('#error .alert').innerHTML =
-          '<p class="mb-2">Configura la URL del Web App en el archivo index.html.</p>' +
-          '<button class="btn btn-outline-danger touch-target" onclick="cargarInventario()">Reintentar</button>';
-        return;
-      }
 
       try {
         const res = await fetch(SCRIPT_URL, { redirect: 'follow' });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const json = await res.json();
-
         if (json.status !== 'ok') throw new Error(json.message || 'Error del servidor');
 
         inventarioData = json.data;
-        console.log('Datos del servidor:', JSON.stringify(json));
         renderizarTabla(inventarioData);
         renderizarSelector(inventarioData);
+        actualizarProgresoGlobal(inventarioData);
 
         const todosCumplidos = inventarioData.every(p => p.restante <= 0);
-        if (todosCumplidos) {
-          mostrar(['allDone']);
-        } else {
-          mostrar(['content']);
-        }
+        mostrar([todosCumplidos ? 'allDone' : 'content']);
 
       } catch (err) {
         console.error('Error al cargar:', err);
@@ -164,56 +658,66 @@
       }
     }
 
+    /* ── Global progress ── */
+    function actualizarProgresoGlobal(data) {
+      const totalMeta = data.reduce((s, p) => s + p.metaTotal, 0);
+      const totalDonado = data.reduce((s, p) => s + p.totalDonado, 0);
+      const pct = totalMeta > 0 ? Math.min(100, Math.round((totalDonado / totalMeta) * 100)) : 0;
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressText').textContent = pct + '% completado';
+    }
+
+    /* ── Render item rows ── */
     function renderizarTabla(data) {
-      const tbody = document.getElementById('tablaBody');
-      tbody.innerHTML = '';
+      const container = document.getElementById('itemsList');
+      container.innerHTML = '';
 
       data.forEach(p => {
-        const porcentaje = p.metaTotal > 0 ? Math.min(100, Math.round((p.totalDonado / p.metaTotal) * 100)) : 0;
+        const pct = p.metaTotal > 0 ? Math.min(100, Math.round((p.totalDonado / p.metaTotal) * 100)) : 0;
         const cumplido = p.restante <= 0;
 
-        const tr = document.createElement('tr');
-        tr.className = cumplido ? 'table-success' : '';
+        const row = document.createElement('div');
+        row.className = 'item-row' + (cumplido ? ' completed' : '');
 
-        tr.innerHTML = `
-          <td class="fw-medium">${escHtml(p.producto)}</td>
-          <td class="text-center">${p.metaTotal}</td>
-          <td class="text-center">${p.totalDonado}</td>
-          <td class="text-center">${p.restante}</td>
-          <td class="text-end">
+        row.innerHTML = `
+          <div>
+            <div class="item-name">${escHtml(p.producto)}</div>
+            <div class="item-meta">${p.totalDonado} de ${p.metaTotal} donados</div>
+          </div>
+          <div class="item-stats">
             ${cumplido
-              ? '<span class="badge bg-success badge-meta">¡Meta cumplida!</span>'
-              : `<div class="progress" style="min-width:60px">
-                   <div class="progress-bar bg-success" role="progressbar" style="width:${porcentaje}%"
-                        aria-valuenow="${p.totalDonado}" aria-valuemin="0" aria-valuemax="${p.metaTotal}"></div>
-                 </div>`
+              ? '<span class="badge-done">✓ Cumplida</span>'
+              : `<span class="item-restante">${p.restante}</span><div class="item-meta">restantes</div>`
             }
-          </td>
+          </div>
+          <div class="item-bar">
+            <div class="item-bar-fill ${cumplido ? 'full' : 'partial'}" style="width:${pct}%"></div>
+          </div>
         `;
-        tbody.appendChild(tr);
+        container.appendChild(row);
       });
     }
 
+    /* ── Render select ── */
     function renderizarSelector(data) {
       const select = document.getElementById('producto');
       const valorActual = select.value;
       select.innerHTML = '<option value="" disabled selected>— Selecciona un producto —</option>';
 
-      const disponibles = data.filter(p => p.restante > 0);
-      disponibles.forEach(p => {
+      data.filter(p => p.restante > 0).forEach(p => {
         const opt = document.createElement('option');
         opt.value = p.producto;
-        opt.textContent = p.producto;
+        opt.textContent = `${p.producto} (quedan ${p.restante})`;
         select.appendChild(opt);
       });
 
       if (valorActual && [...select.options].some(o => o.value === valorActual)) {
         select.value = valorActual;
       }
-
       actualizarAyudaCantidad();
     }
 
+    /* ── Quantity helper ── */
     function actualizarAyudaCantidad() {
       const select = document.getElementById('producto');
       const ayuda = document.getElementById('cantidadAyuda');
@@ -221,10 +725,12 @@
       const producto = inventarioData.find(p => p.producto === select.value);
 
       if (producto && producto.restante > 0) {
-        ayuda.textContent = `Quedan ${producto.restante} por cubrir.`;
+        ayuda.textContent = `Quedan ${producto.restante} por cubrir`;
+        ayuda.className = 'form-text restante-hint';
         cantidad.max = producto.restante;
       } else {
         ayuda.textContent = '';
+        ayuda.className = 'form-text';
         cantidad.removeAttribute('max');
       }
 
@@ -233,12 +739,13 @@
       }
     }
 
+    /* ── Button state ── */
     function actualizarBotonSubmit() {
       const form = document.getElementById('donacionForm');
-      const btn = document.getElementById('btnSubmit');
-      btn.disabled = !form.checkValidity();
+      document.getElementById('btnSubmit').disabled = !form.checkValidity();
     }
 
+    /* ── Event listeners ── */
     document.getElementById('producto').addEventListener('change', function() {
       actualizarAyudaCantidad();
       this.classList.remove('is-invalid');
@@ -247,58 +754,52 @@
 
     document.getElementById('cantidad').addEventListener('input', function() {
       const max = Number(this.max);
-      if (max && Number(this.value) > max) {
-        this.value = max;
-      }
+      if (max && Number(this.value) > max) this.value = max;
       this.classList.remove('is-invalid');
       actualizarBotonSubmit();
     });
 
-    document.getElementById('nombre').addEventListener('input', function() {
-      this.classList.remove('is-invalid');
-      actualizarBotonSubmit();
-    });
-
-    document.getElementById('apellido').addEventListener('input', function() {
-      this.classList.remove('is-invalid');
-      actualizarBotonSubmit();
-    });
-
-    document.querySelectorAll('#donacionForm input, #donacionForm select').forEach(el => {
-      el.addEventListener('blur', function() {
-        if (this.value) this.classList.remove('is-invalid');
+    ['nombre', 'apellido'].forEach(id => {
+      document.getElementById(id).addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+        actualizarBotonSubmit();
       });
     });
 
+    /* ── Escape HTML ── */
     function escHtml(str) {
       const div = document.createElement('div');
       div.textContent = str;
       return div.innerHTML;
     }
 
-    function mostrarAlerta(tipo, mensaje, autodescarte) {
+    /* ── Custom alerts ── */
+    function mostrarAlerta(tipo, mensaje, autoClose) {
+      const icons = { success: '✅', danger: '❌', warning: '⚠️' };
       const container = document.getElementById('alertContainer');
-      const alerta = document.createElement('div');
-      alerta.className = `alert alert-${tipo} alert-dismissible fade show`;
-      alerta.innerHTML = `${escHtml(mensaje)}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>`;
-      container.appendChild(alerta);
+      const el = document.createElement('div');
+      el.className = `alert-custom ${tipo}`;
+      el.innerHTML = `
+        <span class="alert-icon">${icons[tipo] || ''}</span>
+        <span class="alert-body">${escHtml(mensaje)}</span>
+        <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+      `;
+      container.appendChild(el);
 
-      if (autodescarte !== false) {
+      if (autoClose !== false) {
         setTimeout(() => {
-          alerta.classList.remove('show');
-          setTimeout(() => alerta.remove(), 300);
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(-10px)';
+          el.style.transition = 'all .3s ease';
+          setTimeout(() => el.remove(), 300);
         }, 5000);
       }
     }
 
+    /* ── Form submit ── */
     document.getElementById('donacionForm').addEventListener('submit', async function(e) {
       e.preventDefault();
-
-      if (!this.checkValidity()) {
-        this.classList.add('was-validated');
-        return;
-      }
+      if (!this.checkValidity()) { this.classList.add('was-validated'); return; }
 
       const btn = document.getElementById('btnSubmit');
       const textoOriginal = btn.innerHTML;
@@ -340,6 +841,7 @@
       }
     });
 
+    /* ── Init ── */
     cargarInventario();
   </script>
 </body>

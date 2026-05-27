@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Completada a Beneficio — Tía Marcela</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; font-size: 16px; }
+    .touch-target { min-height: 44px; min-width: 44px; }
+    .progress { height: 20px; border-radius: 10px; }
+    .badge-meta { font-size: 0.75rem; }
+    #loading, #error, #allDone, #content { display: none; }
+    #loading { display: flex; }
+    .alert-container { position: fixed; top: 0; left: 0; right: 0; z-index: 1050; padding: 1rem; pointer-events: none; }
+    .alert-container > .alert { pointer-events: auto; max-width: 600px; margin: 0 auto; }
+  </style>
+</head>
+<body>
+
+  <div class="alert-container" id="alertContainer"></div>
+
+  <div class="container py-4">
+
+    <div class="text-center mb-4">
+      <h1 class="h3 mb-1">Completada a Beneficio — Tía Marcela</h1>
+      <p class="text-muted mb-0">Miércoles 03 de Junio</p>
+    </div>
+
+    <div id="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="mt-2 text-muted">Cargando productos...</p>
+    </div>
+
+    <div id="error" class="text-center py-5">
+      <div class="alert alert-danger d-inline-block">
+        <p class="mb-2">No se pudieron cargar los datos. Intenta de nuevo.</p>
+        <button class="btn btn-outline-danger touch-target" onclick="cargarInventario()">Reintentar</button>
+      </div>
+    </div>
+
+    <div id="allDone" class="text-center py-5" style="display:none">
+      <div class="alert alert-success">
+        <h4 class="alert-heading">¡Todas las metas fueron cubiertas!</h4>
+        <p class="mb-0">Gracias a todos por su generosidad.</p>
+      </div>
+    </div>
+
+    <div id="content" style="display:none">
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0" id="tabla">
+              <thead class="table-light">
+                <tr>
+                  <th>Producto</th>
+                  <th class="text-center">Meta</th>
+                  <th class="text-center">Donado</th>
+                  <th class="text-center">Restante</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tablaBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4" id="formCard">
+        <div class="card-body">
+          <h2 class="h5 card-title mb-3">Registrar Donación</h2>
+          <form id="donacionForm" novalidate>
+            <div class="mb-3">
+              <label for="producto" class="form-label">Producto</label>
+              <select class="form-select touch-target" id="producto" required>
+                <option value="" disabled selected>— Selecciona un producto —</option>
+              </select>
+              <div class="invalid-feedback">Selecciona un producto.</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="cantidad" class="form-label">Cantidad</label>
+              <input type="number" class="form-control touch-target" id="cantidad" min="1" step="1" required>
+              <div class="invalid-feedback">Ingresa una cantidad válida.</div>
+              <small id="cantidadAyuda" class="form-text text-muted"></small>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input type="text" class="form-control touch-target" id="nombre" minlength="2" maxlength="50" required autocomplete="given-name" style="text-transform: capitalize">
+                <div class="invalid-feedback">El nombre debe tener al menos 2 caracteres.</div>
+              </div>
+              <div class="col-sm-6">
+                <label for="apellido" class="form-label">Apellido</label>
+                <input type="text" class="form-control touch-target" id="apellido" minlength="2" maxlength="50" required autocomplete="family-name" style="text-transform: capitalize">
+                <div class="invalid-feedback">El apellido debe tener al menos 2 caracteres.</div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 touch-target" id="btnSubmit" disabled>
+              Registrar Donación
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+    <footer class="text-center text-muted small mt-4 pt-3 border-top">
+      <p class="mb-0">También puedes aportar con dinero en efectivo. ¡Gracias!</p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6UX6vJRryhEmvysiYVwHZjEEa1STqL0SkSXPP7mOy5ns6liQw_-0uN8CuinLFzsKa/exec';
+
+    let inventarioData = [];
+
+    function mostrar(ids) {
+      const displayMap = { loading: 'flex', error: 'block', allDone: 'block', content: 'block' };
+      ['loading', 'error', 'allDone', 'content'].forEach(id => {
+        document.getElementById(id).style.display = ids.includes(id) ? displayMap[id] : 'none';
+      });
+    }
+
+    async function cargarInventario() {
+      mostrar(['loading']);
+
+      if (!SCRIPT_URL || SCRIPT_URL === 'URL_DEL_WEB_APP') {
+        mostrar(['error']);
+        document.querySelector('#error .alert').innerHTML =
+          '<p class="mb-2">Configura la URL del Web App en el archivo index.html.</p>' +
+          '<button class="btn btn-outline-danger touch-target" onclick="cargarInventario()">Reintentar</button>';
+        return;
+      }
+
+      try {
+        const res = await fetch(SCRIPT_URL, { redirect: 'follow' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const json = await res.json();
+
+        if (json.status !== 'ok') throw new Error(json.message || 'Error del servidor');
+
+        inventarioData = json.data;
+        console.log('Datos del servidor:', JSON.stringify(json));
+        renderizarTabla(inventarioData);
+        renderizarSelector(inventarioData);
+
+        const todosCumplidos = inventarioData.every(p => p.restante <= 0);
+        if (todosCumplidos) {
+          mostrar(['allDone']);
+        } else {
+          mostrar(['content']);
+        }
+
+      } catch (err) {
+        console.error('Error al cargar:', err);
+        mostrar(['error']);
+      }
+    }
+
+    function renderizarTabla(data) {
+      const tbody = document.getElementById('tablaBody');
+      tbody.innerHTML = '';
+
+      data.forEach(p => {
+        const porcentaje = p.metaTotal > 0 ? Math.min(100, Math.round((p.totalDonado / p.metaTotal) * 100)) : 0;
+        const cumplido = p.restante <= 0;
+
+        const tr = document.createElement('tr');
+        tr.className = cumplido ? 'table-success' : '';
+
+        tr.innerHTML = `
+          <td class="fw-medium">${escHtml(p.producto)}</td>
+          <td class="text-center">${p.metaTotal}</td>
+          <td class="text-center">${p.totalDonado}</td>
+          <td class="text-center">${p.restante}</td>
+          <td class="text-end">
+            ${cumplido
+              ? '<span class="badge bg-success badge-meta">¡Meta cumplida!</span>'
+              : `<div class="progress" style="min-width:60px">
+                   <div class="progress-bar bg-success" role="progressbar" style="width:${porcentaje}%"
+                        aria-valuenow="${p.totalDonado}" aria-valuemin="0" aria-valuemax="${p.metaTotal}"></div>
+                 </div>`
+            }
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderizarSelector(data) {
+      const select = document.getElementById('producto');
+      const valorActual = select.value;
+      select.innerHTML = '<option value="" disabled selected>— Selecciona un producto —</option>';
+
+      const disponibles = data.filter(p => p.restante > 0);
+      disponibles.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.producto;
+        opt.textContent = p.producto;
+        select.appendChild(opt);
+      });
+
+      if (valorActual && [...select.options].some(o => o.value === valorActual)) {
+        select.value = valorActual;
+      }
+
+      actualizarAyudaCantidad();
+    }
+
+    function actualizarAyudaCantidad() {
+      const select = document.getElementById('producto');
+      const ayuda = document.getElementById('cantidadAyuda');
+      const cantidad = document.getElementById('cantidad');
+      const producto = inventarioData.find(p => p.producto === select.value);
+
+      if (producto && producto.restante > 0) {
+        ayuda.textContent = `Quedan ${producto.restante} por cubrir.`;
+        cantidad.max = producto.restante;
+      } else {
+        ayuda.textContent = '';
+        cantidad.removeAttribute('max');
+      }
+
+      if (cantidad.value && cantidad.max && Number(cantidad.value) > Number(cantidad.max)) {
+        cantidad.value = cantidad.max;
+      }
+    }
+
+    function actualizarBotonSubmit() {
+      const form = document.getElementById('donacionForm');
+      const btn = document.getElementById('btnSubmit');
+      btn.disabled = !form.checkValidity();
+    }
+
+    document.getElementById('producto').addEventListener('change', function() {
+      actualizarAyudaCantidad();
+      this.classList.remove('is-invalid');
+      actualizarBotonSubmit();
+    });
+
+    document.getElementById('cantidad').addEventListener('input', function() {
+      const max = Number(this.max);
+      if (max && Number(this.value) > max) {
+        this.value = max;
+      }
+      this.classList.remove('is-invalid');
+      actualizarBotonSubmit();
+    });
+
+    document.getElementById('nombre').addEventListener('input', function() {
+      this.classList.remove('is-invalid');
+      actualizarBotonSubmit();
+    });
+
+    document.getElementById('apellido').addEventListener('input', function() {
+      this.classList.remove('is-invalid');
+      actualizarBotonSubmit();
+    });
+
+    document.querySelectorAll('#donacionForm input, #donacionForm select').forEach(el => {
+      el.addEventListener('blur', function() {
+        if (this.value) this.classList.remove('is-invalid');
+      });
+    });
+
+    function escHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function mostrarAlerta(tipo, mensaje, autodescarte) {
+      const container = document.getElementById('alertContainer');
+      const alerta = document.createElement('div');
+      alerta.className = `alert alert-${tipo} alert-dismissible fade show`;
+      alerta.innerHTML = `${escHtml(mensaje)}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>`;
+      container.appendChild(alerta);
+
+      if (autodescarte !== false) {
+        setTimeout(() => {
+          alerta.classList.remove('show');
+          setTimeout(() => alerta.remove(), 300);
+        }, 5000);
+      }
+    }
+
+    document.getElementById('donacionForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      if (!this.checkValidity()) {
+        this.classList.add('was-validated');
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmit');
+      const textoOriginal = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Registrando...';
+
+      const payload = {
+        nombre: document.getElementById('nombre').value.trim(),
+        apellido: document.getElementById('apellido').value.trim(),
+        producto: document.getElementById('producto').value,
+        cantidad: Number(document.getElementById('cantidad').value)
+      };
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          redirect: 'follow',
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+
+        if (json.status === 'ok') {
+          mostrarAlerta('success',
+            `¡Gracias, ${payload.nombre}! Tu donación de ${payload.cantidad} ${payload.producto} fue registrada.`);
+          this.reset();
+          this.classList.remove('was-validated');
+          await cargarInventario();
+        } else {
+          mostrarAlerta('danger', json.message || 'Error al registrar la donación.', false);
+          await cargarInventario();
+        }
+      } catch (err) {
+        console.error('Error de red:', err);
+        mostrarAlerta('warning', 'Error de conexión. Intenta de nuevo.', false);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = textoOriginal;
+        actualizarBotonSubmit();
+      }
+    });
+
+    cargarInventario();
+  </script>
+</body>
+</html>
