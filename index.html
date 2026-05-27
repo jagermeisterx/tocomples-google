@@ -122,8 +122,9 @@
     let inventarioData = [];
 
     function mostrar(ids) {
+      const displayMap = { loading: 'flex', error: 'block', allDone: 'block', content: 'block' };
       ['loading', 'error', 'allDone', 'content'].forEach(id => {
-        document.getElementById(id).style.display = ids.includes(id) ? '' : 'none';
+        document.getElementById(id).style.display = ids.includes(id) ? displayMap[id] : 'none';
       });
     }
 
